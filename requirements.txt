@@ -5,7 +5,7 @@ aiosqlite
 numpy
 pillow
 aiohttp
-tensflow
+tensorflow
 keras
 tensorflow-hub
 pyarmor
