@@ -19,17 +19,10 @@ BLACKLISTED_CHANNELS = [1120191562060660777]
 ping_id = "1005663711123493025"
 user_id = "1005663711123493025"
 
-intervals = [3, 3, 3, 3] 
+intervals = [3, 2, 3, 2] 
 
 
-try:
-    ping_id = os.environ['ping_id']
-except:
-    ping_id = False
-try:
-    user_id = os.environ['user_id']
-except:
-    user_id = False
+
 sh_interval = False
 
 with open('pokemon.txt', 'r', encoding='utf8') as file:
