@@ -1,2 +1,7 @@
 discord
 flask
+re
+os
+asyncio
+random
+string
