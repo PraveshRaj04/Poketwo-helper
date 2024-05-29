@@ -4,11 +4,10 @@ asyncio
 aiosqlite
 numpy
 pillow
-ast
 aiohttp
 tensflow
 keras
 tensorflow-hub
-requests
+pyarmor
 
 
