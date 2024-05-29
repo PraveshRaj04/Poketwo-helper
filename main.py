@@ -53,23 +53,6 @@ def solve(message):
         return solution
 
 
-@tasks.loop(seconds=random.choice(intervals))
-async def spam():
-    channel = bot.get_channel(int(spam_id))
-    await channel.send(''.join(
-        random.sample(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'], 7) *
-        5))
-
-
-
-@spam.before_loop
-async def before_spam():
-    await bot.wait_until_ready()
-
-
-spam.start()
-
-
 @bot.event
 async def on_ready():
     print(f'Logged into account: {bot.user.name}')
@@ -87,8 +70,7 @@ async def on_message(message):
                 if message.embeds:
                     embed_title = message.embeds[0].title
                     if 'wild pokémon has appeared!' in embed_title and not stopped:
-                        spam.cancel()
-                        await asyncio.sleep(3)  #Hint Delay, ffs not do 1
+                        await asyncio.sleep(1)  #Hint Delay, ffs not do 1
                         await message.channel.send('<@716390085896962058> h')
                     elif "Congratulations" in embed_title:
                         embed_content = message.embeds[0].description
@@ -115,10 +97,8 @@ async def on_message(message):
                         check = random.randint(1, 60)
                         if check == 1:
                             await asyncio.sleep(900)
-                            spam.start()
                         else:
                             await asyncio.sleep(1)
-                            spam.start()
 
                     elif 'Congratulations' in content:
                         global shiny
@@ -219,7 +199,6 @@ async def on_message(message):
 
 
                     elif 'human' in content:
-                        spam.cancel()
                         if ping_id:
                             await ping__channel.send(
                                 f" **__Captcha detected!__**\nYour autocatcher has been paused because of a  pending captcha. Please verify from the below link and use the command {bot_prefix}captcha to continue."
@@ -231,7 +210,6 @@ async def on_message(message):
                             print(
                                 f"Captcha has been detected! Please use =verified in discord to reactivate the autocatcher!"
                             )
-                            spam.cancel()
                             stopped = True
                             verified = False
     if not message.author.bot:
@@ -245,7 +223,6 @@ async def stop(ctx):
         await ctx.send(
             f"<:level30:1113344800272416818> The autocatcher has been paused. Please use {bot_prefix}start to resume the autocatcher."
         )
-        spam.cancel()
         stopped = True
     else:
         await ctx.send(
@@ -260,7 +237,6 @@ async def start(ctx):
         await ctx.send(
             f"<:level30:1113344800272416818> The autocatcher has been started. Use {bot_prefix}stop to stop the autocatcher."
         )
-        spam.start()
         stopped = False
     else:
         await ctx.send(
@@ -279,7 +255,6 @@ async def verified(ctx):
         await ctx.send(
             "<:level30:1113344800272416818> Captcha confirmed! Autocatcher has been reactivated!")
         stopped = False
-        spam.start()
         verified = True
 
 
