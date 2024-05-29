@@ -1,3 +1,11 @@
 discord.py-self
 flask
 asyncio
+aiosqlite
+json
+numpy
+PIL
+io
+ast
+aiohttp
+tensflow.keras
