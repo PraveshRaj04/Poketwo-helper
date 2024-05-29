@@ -1,6 +1,5 @@
 discord
 flask
-os
 asyncio
 random
 string
