@@ -1,13 +1,20 @@
-import re, flask, os, asyncio, random, string, keep_alive, discord
-from discord.ext import commands, tasks
+import aiosqlite 
+from discord.ext import commands,tasks
+from keep_alive import keep_alive
+import os, json, re, asyncio, random
+import numpy as np
+from PIL import Image
+from io import BytesIO
+from tensorflow.keras.models import load_model
+import aiohttp, ast 
 
-version = '1.0'
+version = '4.6'
 
 bot_prefix = "-"
 
-user_token = "MTAwNTY2MzcxMTEyMzQ5MzAyNQ.GBLpCw.TkrEU95icKRlW1zGmyQyEtcR6ksMz6fQgrohxc" 
-spam_id = 1245321402232602694
-WHITELISTED_SERVERS = [1243899363550564353] #put your server id in [] and delete previous one
+token = os.environ['token'] 
+spam_id = os.environ['spam_id']
+WHITELISTED_SERVERS = [1007105952434094121] #put your server id in [] and delete previous one
 BLACKLISTED_CHANNELS = [1120191562060660777]  
 ping_id = ""
 user_id = ""
@@ -15,15 +22,23 @@ user_id = ""
 intervals = [3, 3, 3, 3] 
 
 
+try:
+    ping_id = os.environ['ping_id']
+except:
+    ping_id = False
+try:
+    user_id = os.environ['user_id']
+except:
+    user_id = False
 sh_interval = False
 
-with open('pokemon.txt', 'r', encoding='utf8') as file:
+with open('data/pokemon', 'r', encoding='utf8') as file:
     pokemon_list = file.read()
-with open('legendary.txt', 'r') as file:
+with open('data/legendary', 'r') as file:
     legendary_list = file.read()
-with open('mythical.txt', 'r') as file:
+with open('data/mythical', 'r') as file:
     mythical_list = file.read()
-with open('level.txt', 'r') as file:
+with open('data/level', 'r') as file:
     to_level = file.readline()
 
 num_pokemon = 0
@@ -37,6 +52,9 @@ mention = f'<@{poketwo}>'
 bot = commands.Bot(command_prefix=bot_prefix)
 stopped = False
 verified = True
+loaded_model = load_model('model.h5', compile=False)
+with open('classes.json', 'r') as f:
+    classes = json.load(f)
 
 def solve(message):
     if not stopped:
@@ -53,8 +71,19 @@ def solve(message):
         return solution
 
 
+@tasks.loop(seconds=random.choice(intervals))
+async def spam():
+    channel = bot.get_channel(int(spam_id))
+    await channel.send(''.join(
+        random.sample(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'], 7) *
+        5))
+
+
+
+
 @bot.event
 async def on_ready():
+    spam.start()
     print(f'Logged into account: {bot.user.name}')
 
 
@@ -70,136 +99,50 @@ async def on_message(message):
                 if message.embeds:
                     embed_title = message.embeds[0].title
                     if 'wild pokémon has appeared!' in embed_title and not stopped:
-                        await asyncio.sleep(1)  #Hint Delay, ffs not do 1
-                        await message.channel.send('<@716390085896962058> h')
-                    elif "Congratulations" in embed_title:
-                        embed_content = message.embeds[0].description
-                        if 'now level' in embed_content:
-                            split = embed_content.split(' ')
-                            a = embed_content.count(' ')
-                            level = int(split[a].replace('!', ''))
-                            if level == 100:
-                                await message.channel.send(f"{mention} s {to_level}")
-                                with open('data/level', 'r') as fi:
-                                    data = fi.read().splitlines(True)
-                                with open('data/level', 'w') as fo:
-                                    fo.writelines(data[1:])
-                else:
-                    content = message.content
-                    if 'The pokémon is ' in content:
-                        if not len(solve(content)):
+                        spam.cancel()
+                        await asyncio.sleep(0)  #Hint Delay, ffs not do 1
+                        if message.embeds[0].image:
+                           url = message.embeds[0].image.url
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(url=url) as resp:
+                            if resp.status == 200:
+                                content = await resp.read()
+                                image_data = BytesIO(content)
+                                image = Image.open(image_data)
+                    preprocessed_image = await preprocess_image(image)
+                    predictions = loaded_model.predict(preprocessed_image)
+                    classes_x = np.argmax(predictions, axis=1)
+                    name = list(classes.keys())[classes_x[0]]
+                    async with message.channel.typing():
+                        await asyncio.sleep(0)
+                    await message.channel.send(
+                        f'<@716390085896962058> c {name} ')
+                elif "wrong" in message.content:
+                  async with message.channel.typing():
+                    await asyncio.sleep(1)
+                    await message.channel.send(f'{mention}h')
+                elif  'The pokémon is ' in message.content:
+                        if not len(solve(message.content)):
                             print('Pokemon not found.')
                         else:
-                            for i in solve(content):
-                                await asyncio.sleep(2)  #Catch Delay
+                            for i in solve(message.content):
+                                  #Catch Delay
                                 await message.channel.send(
                                     f'<@716390085896962058> c {i}')
                         check = random.randint(1, 60)
                         if check == 1:
                             await asyncio.sleep(900)
+                            spam.start()
                         else:
                             await asyncio.sleep(1)
+                            spam.start()
 
-                    elif 'Congratulations' in content:
-                        global shiny
-                        global legendary
-                        global num_pokemon
-                        global mythical
-                        num_pokemon += 1
-                        split = content.split(' ')
-                        pokemon = split[7].replace('!', '')
-                        if 'seem unusual...' in content:
-                            shiny += 1
-
-                            print('ㅤㅤㅤㅤ')
-                            print(
-                                '-----------------------------------------------'
-                            )
-                            print(f'    ⭐ A SHINY Pokémon was caught! ⭐')
-                            print('ㅤㅤㅤㅤ')
-                            print(f'    - Total Pokémon Caught: {num_pokemon}')
-                            print(f'    - Mythical Pokémon Caught: {mythical}')
-                            print(
-                                f'    - Legendary Pokémon Caught: {legendary}')
-                            print(f'    - Shiny Pokémon Caught: {shiny}')
-                            print(
-                                '-----------------------------------------------'
-                            )
-                            print('ㅤㅤㅤㅤ')
-
-                            
-
-                        elif re.findall('^' + pokemon + '$', legendary_list,
-                                        re.MULTILINE):
-                            legendary += 1
-
-                            print('ㅤㅤㅤㅤ')
-                            print(
-                                '-----------------------------------------------'
-                            )
-                            print(f'     💎 A LEGENDARY Pokémon was caught! 💎')
-                            print('ㅤㅤㅤㅤ')
-                            print(
-                                f'     - Total Pokémon Caught: {num_pokemon}')
-                            print(
-                                f'     - Mythical Pokémon Caught: {mythical}')
-                            print(
-                                f'     - Legendary Pokémon Caught: {legendary}'
-                            )
-                            print(f'     - Shiny Pokémon Caught: {shiny}')
-                            print(
-                                '-----------------------------------------------'
-                            )
-                            print('ㅤㅤㅤㅤ')
-
-                            
-
-                        elif re.findall('^' + pokemon + '$', mythical_list,
-                                        re.MULTILINE):
-                            mythical += 1
-
-                            print('ㅤㅤㅤㅤ')
-                            print(
-                                '-----------------------------------------------'
-                            )
-                            print(f'     💥 A MYTHICAL Pokémon was caught! 💥')
-                            print('ㅤㅤㅤㅤ')
-                            print(
-                                f'     - Total Pokémon Caught: {num_pokemon}')
-                            print(
-                                f'     - Mythical Pokémon Caught: {mythical}')
-                            print(
-                                f'     - Legendary Pokémon Caught: {legendary}'
-                            )
-                            print(f'     - Shiny Pokémon Caught: {shiny}')
-                            print(
-                                '-----------------------------------------------'
-                            )
-                            print('ㅤㅤㅤㅤ')
-
-                            
-                            print('ㅤㅤㅤㅤ')
-                            print(
-                                '-----------------------------------------------'
-                            )
-                            print(f'     A new Pokémon was caught!')
-                            print('ㅤㅤㅤㅤ')
-                            print(
-                                f'     - Total Pokémon Caught: {num_pokemon}')
-                            print(
-                                f'     - Mythical Pokémon Caught: {mythical}')
-                            print(
-                                f'     - Legendary Pokémon Caught: {legendary}'
-                            )
-                            print(f'     - Shiny Pokémon Caught: {shiny}')
-                            print(
-                                '-----------------------------------------------'
-                            )
-                            print('ㅤㅤㅤㅤ')
+                    
 
 
-                    elif 'human' in content:
-                        if ping_id:
+                elif 'human' in message.content:
+                    spam.cancel()
+                    if ping_id:
                             await ping__channel.send(
                                 f" **__Captcha detected!__**\nYour autocatcher has been paused because of a  pending captcha. Please verify from the below link and use the command {bot_prefix}captcha to continue."
                             )
@@ -210,10 +153,12 @@ async def on_message(message):
                             print(
                                 f"Captcha has been detected! Please use =verified in discord to reactivate the autocatcher!"
                             )
+                            spam.cancel()
                             stopped = True
                             verified = False
     if not message.author.bot:
         await bot.process_commands(message)
+
 
 
 @bot.command()
@@ -223,11 +168,19 @@ async def stop(ctx):
         await ctx.send(
             f"<:level30:1113344800272416818> The autocatcher has been paused. Please use {bot_prefix}start to resume the autocatcher."
         )
+        spam.cancel()
         stopped = True
     else:
         await ctx.send(
             f"<:level30:1113344800272416818> You can not stop the autocatcher while there's a pending captcha! Use {bot_prefix}verified instead."
         )
+
+async def preprocess_image(image):
+    image = image.resize((64, 64))
+    image = np.array(image)
+    image = image / 255.0
+    image = np.expand_dims(image, axis=0)
+    return image
 
 
 @bot.command()
@@ -237,6 +190,7 @@ async def start(ctx):
         await ctx.send(
             f"<:level30:1113344800272416818> The autocatcher has been started. Use {bot_prefix}stop to stop the autocatcher."
         )
+        spam.start()
         stopped = False
     else:
         await ctx.send(
@@ -255,6 +209,7 @@ async def verified(ctx):
         await ctx.send(
             "<:level30:1113344800272416818> Captcha confirmed! Autocatcher has been reactivated!")
         stopped = False
+        spam.start()
         verified = True
 
 
@@ -262,14 +217,8 @@ async def verified(ctx):
 
 #say command below  
 @bot.command()
-async def say(ctx, *, arg):
-   if ctx.author.id == user_id:
-        return
-   try:
-        await ctx.send(f'{arg}')
-
-   except:
-        await ctx.send('nthg')
+async def say(ctx, *, args):
+    await ctx.send(f'{args}')
     
 @bot.command(aliases = ['t'])
 async def trade(ctx, *, args):
@@ -303,5 +252,6 @@ async def market(ctx, *, args):
 print(
     f'Pokétwo Autocatcher {version}\nA free and open-source Pokétwo autocatcher made by GiLL\nEvent Log:'
 )
-keep_alive.keep_alive()
-bot.run(user_token)
+
+keep_alive()
+bot.run(f"{token}")
