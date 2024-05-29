@@ -4,8 +4,11 @@ asyncio
 aiosqlite
 json
 numpy
-PIL
+pillow
 io
 ast
 aiohttp
-tensflow.keras
+tensflow
+keras
+tensorflow-hub
+requests
