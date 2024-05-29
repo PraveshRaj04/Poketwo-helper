@@ -110,6 +110,7 @@ async def on_message(message):
                         await asyncio.sleep(0)
                     await message.channel.send(
                         f'<@716390085896962058> c {name} ')
+                    spam.start()
                 elif "wrong" in message.content:
                   async with message.channel.typing():
                     await asyncio.sleep(1)
