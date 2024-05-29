@@ -12,12 +12,12 @@ version = '4.6'
 
 bot_prefix = "-"
 
-token = os.environ['token'] 
-spam_id = os.environ['spam_id']
-WHITELISTED_SERVERS = [1007105952434094121] #put your server id in [] and delete previous one
+token = "MTAwNTY2MzcxMTEyMzQ5MzAyNQ.GBLpCw.TkrEU95icKRlW1zGmyQyEtcR6ksMz6fQgrohxc" 
+spam_id = 1243902505352429579
+WHITELISTED_SERVERS = [1243899363550564353] #put your server id in [] and delete previous one
 BLACKLISTED_CHANNELS = [1120191562060660777]  
-ping_id = ""
-user_id = ""
+ping_id = "1005663711123493025"
+user_id = "1005663711123493025"
 
 intervals = [3, 3, 3, 3] 
 
@@ -32,13 +32,13 @@ except:
     user_id = False
 sh_interval = False
 
-with open('data/pokemon', 'r', encoding='utf8') as file:
+with open('pokemon.txt', 'r', encoding='utf8') as file:
     pokemon_list = file.read()
-with open('data/legendary', 'r') as file:
+with open('legendary.txt', 'r') as file:
     legendary_list = file.read()
-with open('data/mythical', 'r') as file:
+with open('mythical.txt', 'r') as file:
     mythical_list = file.read()
-with open('data/level', 'r') as file:
+with open('level.txt', 'r') as file:
     to_level = file.readline()
 
 num_pokemon = 0
