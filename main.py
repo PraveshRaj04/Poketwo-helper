@@ -15,23 +15,15 @@ user_id = ""
 intervals = [3, 3, 3, 3] 
 
 
-try:
-    ping_id = os.environ['ping_id']
-except:
-    ping_id = False
-try:
-    user_id = os.environ['user_id']
-except:
-    user_id = False
 sh_interval = False
 
-with open('data/pokemon', 'r', encoding='utf8') as file:
+with open('pokemon.txt', 'r', encoding='utf8') as file:
     pokemon_list = file.read()
-with open('data/legendary', 'r') as file:
+with open('legendary.txt', 'r') as file:
     legendary_list = file.read()
-with open('data/mythical', 'r') as file:
+with open('mythical.txt', 'r') as file:
     mythical_list = file.read()
-with open('data/level', 'r') as file:
+with open('level.txt', 'r') as file:
     to_level = file.readline()
 
 num_pokemon = 0
@@ -337,4 +329,4 @@ print(
     f'Pokétwo Autocatcher {version}\nA free and open-source Pokétwo autocatcher made by GiLL\nEvent Log:'
 )
 keep_alive.keep_alive()
-bot.run(f"{user_token}")
+bot.run(user_token)
