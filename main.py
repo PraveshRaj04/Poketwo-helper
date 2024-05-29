@@ -7,7 +7,7 @@ bot_prefix = "-"
 
 user_token = "MTAwNTY2MzcxMTEyMzQ5MzAyNQ.GBLpCw.TkrEU95icKRlW1zGmyQyEtcR6ksMz6fQgrohxc" 
 spam_id = 1245321402232602694
-WHITELISTED_SERVERS = [1007105952434094121] #put your server id in [] and delete previous one
+WHITELISTED_SERVERS = [1243899363550564353] #put your server id in [] and delete previous one
 BLACKLISTED_CHANNELS = [1120191562060660777]  
 ping_id = ""
 user_id = ""
