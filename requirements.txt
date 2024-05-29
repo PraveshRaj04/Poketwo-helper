@@ -4,7 +4,6 @@ asyncio
 aiosqlite
 numpy
 pillow
-io
 ast
 aiohttp
 tensflow
