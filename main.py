@@ -10,7 +10,7 @@ import aiohttp, ast
 
 version = '4.6'
 
-bot_prefix = "-69"
+bot_prefix = "$"
 
 token = "MTI0NTM4ODQ5NjE4OTkxOTI0Mg.G2kvqB.HKQFwTQ79BU8erxriUDUj6jAmJn3u_wCJlAWHw" 
 spam_id = 1245391014739447919
